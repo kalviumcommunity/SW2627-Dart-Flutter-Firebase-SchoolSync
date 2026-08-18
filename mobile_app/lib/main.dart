@@ -1,7 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'screens/signup_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+
+Future<void> main() async {
+   WidgetsFlutterBinding.ensureInitialized();
+   try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    debugPrint('🔥 Firebase initialized successfully');
+
+    runApp(const MyApp());
+  } catch (e) {
+    debugPrint('❌ Firebase initialization failed: $e');
+
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Text(
+              'Firebase initialization failed:\n\n$e',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ),
+    );
+    }
 }
 
 class MyApp extends StatelessWidget {
@@ -28,9 +56,10 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 210, 220, 12)),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const SignUpScreen(),
+
     );
   }
 }
@@ -64,6 +93,12 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
+    });
+  }
+
+  void _decrementCounter(){
+    setState(() {
+      _counter--;
     });
   }
 
@@ -112,10 +147,20 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: _incrementCounter,
+            tooltip: 'Increment',
+            child: const Icon(Icons.add),
+          ),
+          FloatingActionButton(
+            onPressed: _decrementCounter,
+            tooltip: 'Decrement',
+            child: const Icon(Icons.remove),
+          ),
+        ],
       ),
     );
   }

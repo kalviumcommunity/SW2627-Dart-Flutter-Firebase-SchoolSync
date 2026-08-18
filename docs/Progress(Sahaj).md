@@ -4,8 +4,6 @@
 
 ---
 
-## 📅 Day 1 — 2026-08-11
-
 ### 🎯 Objective
 Set up the Flutter development environment, validate the project scaffold, resolve build blockers, and get the app running on a web target for the first time.
 
@@ -75,5 +73,8 @@ Set up the Flutter development environment, validate the project scaffold, resol
 - [Flutter Setup Audit Report](./flutter_audit_report.md) — Full environment audit
 
 ---
+
+### 🎯 Objective
+After completing the log in and sign up flow we made and finalised the design and data for the user dashboard and made sure that all the data is connected and we prioritized the working and user flow forst. the database, backend logic and the UI layout has been defined after I have created the low level diagram for the following.
 
 *Log maintained by Sahaj Srivastava · Updated after each working session*
