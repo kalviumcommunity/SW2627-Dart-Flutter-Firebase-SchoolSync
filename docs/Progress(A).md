@@ -7,6 +7,12 @@ Dart Basics
 -Loops
 -Operators
 -Null safety
+Future 
+async 
+await 
+try / catch 
+Stream 
+listen() 
 
 1. Attendance
 Class-wise attendance data for Classes 6–12 has been removed to simplify the database.
@@ -71,3 +77,5 @@ Financial and calculated data should be protected from unauthorized client-side 
 Current Status
 
 Database structure and mathematical calculation criteria have been conceptually finalized. The next development step is to translate this plan into the actual Firestore collections/documents, field types, indexes, Firebase Security Rules, and backend calculation functions.
+
+After completing the log in and sign up flow we made and finalised the design and data for the user dashboard and made sure that all the data is connected and we prioritized the working and user flow forst. the database, backend logic and the UI layout has been defined after that i will make the appropriate changes to the model tommorrow
