@@ -255,6 +255,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           await _dashboardFuture;
                         },
                       ),
+
+                      // Tab 4: Account Profile Screen
+                      ProfileScreen(
+                        userProfile: _userProfile,
+                        onLogout: _handleLogout,
+                        onBack: () => setState(() => _currentIndex = 0),
+                      ),
                     ],
                   ),
 
