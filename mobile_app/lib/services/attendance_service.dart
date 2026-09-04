@@ -21,4 +21,32 @@ class AttendanceService {
       rethrow;
     }
   }
+
+  /// Saves or updates an attendance record in Cloud Firestore under `schools/{schoolId}/attendance/{date}`.
+  Future<void> saveAttendanceRecord({
+    required String schoolId,
+    required String date,
+    required double attendancePercentage,
+    int? totalStudents,
+    int? presentStudents,
+  }) async {
+    try {
+      await _db
+          .collection('schools')
+          .doc(schoolId)
+          .collection('attendance')
+          .doc(date)
+          .set({
+        'id': date,
+        'schoolId': schoolId,
+        'date': date,
+        'attendancePercentage': attendancePercentage,
+        if (totalStudents != null) 'totalStudents': totalStudents,
+        if (presentStudents != null) 'presentStudents': presentStudents,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

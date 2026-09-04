@@ -75,6 +75,80 @@ class _AttendanceTabState extends State<AttendanceTab> {
   String _formatNumber(int n) =>
       n.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]},');
 
+  Future<void> _showUpdateAttendanceDialog() async {
+    final schoolId = widget.schoolData.school.schoolId;
+    final dateController = TextEditingController(text: '2026-09-01');
+    final percentageController = TextEditingController(text: '82');
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Log Attendance for ${widget.schoolData.school.name}',
+          style: const TextStyle(color: AppColors.text, fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: dateController,
+              decoration: const InputDecoration(
+                labelText: 'Date (YYYY-MM-DD)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: percentageController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Attendance Percentage (%)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.secondaryText)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.background,
+            ),
+            onPressed: () async {
+              final pct = double.tryParse(percentageController.text.trim()) ?? 0.0;
+              final dt = dateController.text.trim();
+              if (dt.isNotEmpty && pct >= 0 && pct <= 100) {
+                Navigator.pop(ctx);
+                await _attendanceService.saveAttendanceRecord(
+                  schoolId: schoolId,
+                  date: dt,
+                  attendancePercentage: pct,
+                );
+                if (mounted) {
+                  setState(() {
+                    _future = _attendanceService.getSchoolAttendanceHistory(schoolId);
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Attendance updated to $pct% for $dt in Firestore!'),
+                      backgroundColor: const Color(0xFF4A6741),
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Save to Firestore', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ── Build ───────────────────────────────────────────────────────────────────
 
   @override
@@ -162,6 +236,25 @@ class _AttendanceTabState extends State<AttendanceTab> {
                       options: const ['Daily', 'Weekly', 'Monthly'],
                       selectedIndex: _modeIndex,
                       onChanged: (i) => setState(() => _modeIndex = i),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Log / Edit Attendance Action Button
+                    ElevatedButton.icon(
+                      onPressed: _showUpdateAttendanceDialog,
+                      icon: const Icon(Icons.edit_calendar_rounded, size: 18, color: Colors.white),
+                      label: const Text(
+                        'Update / Log Attendance',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.background,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
                     ),
                   ],
                 ),

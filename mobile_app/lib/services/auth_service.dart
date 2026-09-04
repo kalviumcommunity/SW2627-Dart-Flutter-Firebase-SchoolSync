@@ -1,11 +1,41 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/signup_model.dart';
 import '../models/login_model.dart';
+import '../models/user_model.dart';
+import 'user_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  /// Verifies if a given district ID exists in Firestore by checking the schools collection.
+  Future<bool> checkDistrictExists(String districtId) async {
+    final cleanId = districtId.trim().toUpperCase();
+    if (cleanId.isEmpty) return false;
+    try {
+      final snap = await _db
+          .collection('schools')
+          .where('districtId', isEqualTo: cleanId)
+          .limit(1)
+          .get()
+          .timeout(const Duration(seconds: 8));
+      return snap.docs.isNotEmpty;
+    } catch (e) {
+      // If network fails or timeout, rethrow so caller knows
+      rethrow;
+    }
+  }
 
   Future<User?> signUp(SignupModel signupData) async {
+    final districtId = signupData.districtId.trim().toUpperCase();
+
+    // 1. Verify district exists BEFORE creating Firebase Auth user
+    final exists = await checkDistrictExists(districtId);
+    if (!exists) {
+      throw Exception('District ID "$districtId" does not exist in the district registry.');
+    }
+
     try {
       final UserCredential result =
           await _auth.createUserWithEmailAndPassword(
@@ -18,6 +48,17 @@ class AuthService {
       if (user != null) {
         await user.updateDisplayName(signupData.name);
         await user.reload();
+
+        // Create user profile document in Firestore users/{uid}
+        await UserService().saveUserProfile(
+          UserModel(
+            uid: user.uid,
+            email: user.email ?? signupData.email,
+            name: signupData.name,
+            role: 'district_admin',
+            districtId: districtId,
+          ),
+        );
 
         return _auth.currentUser;
       }

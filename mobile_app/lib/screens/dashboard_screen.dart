@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/dashboard_service.dart';
+import '../services/user_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/business_rules.dart';
 import '../widgets/dashboard_action_center.dart';
@@ -17,6 +19,7 @@ import 'district/attendance_list_screen.dart';
 import 'district/exams_list_screen.dart';
 import 'district/fees_list_screen.dart';
 import 'login_screen.dart';
+import 'profile_screen.dart';
 
 enum DashboardSortOption {
   needsAttentionFirst,
@@ -35,8 +38,9 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  static const _districtId = 'DIST001';
   final DashboardService _dashboardService = DashboardService();
+  final UserService _userService = UserService();
+  UserModel? _userProfile;
   late Future<DistrictDashboardSummary> _dashboardFuture;
   late final Timer _refreshTimer;
   int _currentIndex = 0;
@@ -50,10 +54,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _dashboardFuture = _dashboardService.getDistrictSummary(_districtId);
+    _dashboardFuture = _fetchDashboardData();
     _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (mounted) _reload();
     });
+  }
+
+  Future<DistrictDashboardSummary> _fetchDashboardData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('User is not logged in. Please sign in to access the district dashboard.');
+    }
+
+    final profile = await _userService.getUserProfile(
+      user.uid,
+      defaultEmail: user.email,
+      defaultName: user.displayName,
+    );
+
+    _userProfile = profile;
+
+    final districtId = profile.districtId.trim();
+    if (districtId.isEmpty) {
+      throw Exception(
+        'No District ID associated with your account. Please log in with a registered district administrator account.',
+      );
+    }
+
+    return await _dashboardService.getDistrictSummary(districtId);
   }
 
   @override
@@ -65,7 +93,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _reload() {
     setState(() {
-      _dashboardFuture = _dashboardService.getDistrictSummary(_districtId);
+      if (_userProfile != null && _userProfile!.districtId.trim().isNotEmpty) {
+        _dashboardFuture = _dashboardService.getDistrictSummary(_userProfile!.districtId.trim());
+      } else {
+        _dashboardFuture = _fetchDashboardData();
+      }
     });
   }
 
@@ -157,79 +189,96 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ? user!.displayName!
         : (user?.email?.split('@').first ?? 'Priya');
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: FutureBuilder<DistrictDashboardSummary>(
-          future: _dashboardFuture,
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return FirebaseErrorView(
-                title: 'Unable to Load Dashboard Data',
-                message: snapshot.error.toString().replaceAll('Exception: ', ''),
-                onRetry: _reload,
-              );
-            }
+    return PopScope(
+      canPop: _currentIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_currentIndex != 0) {
+          setState(() => _currentIndex = 0);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: FutureBuilder<DistrictDashboardSummary>(
+            future: _dashboardFuture,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return FirebaseErrorView(
+                  title: 'Unable to Load Dashboard Data',
+                  message: snapshot.error.toString().replaceAll('Exception: ', ''),
+                  onRetry: _reload,
+                  onLogout: _handleLogout,
+                );
+              }
 
-            if (!snapshot.hasData) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppColors.card),
-              );
-            }
+              if (!snapshot.hasData) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.card),
+                );
+              }
 
-            final summary = snapshot.data!;
+              final summary = snapshot.data!;
 
-            return Stack(
-              children: [
-                // ── Active Tab Page via IndexedStack to retain scroll states ──
-                IndexedStack(
-                  index: _currentIndex,
-                  children: [
-                    // Tab 0: Board Overview
-                    _buildBoardTab(summary, userName),
+              return Stack(
+                children: [
+                  // ── Active Tab Page via IndexedStack to retain scroll states ──
+                  IndexedStack(
+                    index: _currentIndex,
+                    children: [
+                      // Tab 0: Board Overview
+                      _buildBoardTab(summary, userName),
 
-                    // Tab 1: Attendance List Screen
-                    AttendanceListScreen(
-                      summary: summary,
-                      onRefresh: () async {
-                        _reload();
-                        await _dashboardFuture;
-                      },
-                    ),
+                      // Tab 1: Attendance List Screen
+                      AttendanceListScreen(
+                        summary: summary,
+                        onRefresh: () async {
+                          _reload();
+                          await _dashboardFuture;
+                        },
+                      ),
 
-                    // Tab 2: Fees List Screen
-                    FeesListScreen(
-                      summary: summary,
-                      onRefresh: () async {
-                        _reload();
-                        await _dashboardFuture;
-                      },
-                    ),
+                      // Tab 2: Fees List Screen
+                      FeesListScreen(
+                        summary: summary,
+                        onRefresh: () async {
+                          _reload();
+                          await _dashboardFuture;
+                        },
+                      ),
 
-                    // Tab 3: Exams List Screen
-                    ExamsListScreen(
-                      summary: summary,
-                      onRefresh: () async {
-                        _reload();
-                        await _dashboardFuture;
-                      },
-                    ),
-                  ],
-                ),
+                      // Tab 3: Exams List Screen
+                      ExamsListScreen(
+                        summary: summary,
+                        onRefresh: () async {
+                          _reload();
+                          await _dashboardFuture;
+                        },
+                      ),
 
-                // Floating Pill Bottom Navigation Bar Overlay
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: DashboardBottomNav(
-                    currentIndex: _currentIndex,
-                    onTap: (index) => setState(() => _currentIndex = index),
+                      // Tab 4: Account Profile Screen
+                      ProfileScreen(
+                        userProfile: _userProfile,
+                        onLogout: _handleLogout,
+                        onBack: () => setState(() => _currentIndex = 0),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            );
-          },
+
+                  // Floating Pill Bottom Navigation Bar Overlay
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: DashboardBottomNav(
+                      currentIndex: _currentIndex,
+                      onTap: (index) => setState(() => _currentIndex = index),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -256,7 +305,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             DashboardHeader(
               userName: userName,
+              districtId: _userProfile?.districtId,
               onLogout: _handleLogout,
+              onProfileTap: () => setState(() => _currentIndex = 4),
             ),
 
             const SizedBox(height: 20),
@@ -484,7 +535,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisCount: 2,
                   crossAxisSpacing: 14,
                   mainAxisSpacing: 16,
-                  childAspectRatio: 0.92,
+                  childAspectRatio: 0.88,
                 ),
                 itemBuilder: (context, idx) => SchoolCard(
                   schoolData: filteredSchools[idx],

@@ -139,6 +139,49 @@ void main() {
       expect(onTrackSchools.length, 2);
       expect(onTrackSchools.map((s) => s.school.schoolId), containsAll(['SCH001', 'SCH003']));
     });
+
+    test('District Isolation - Admin A (DIST001) vs Admin B (DIST002) isolation', () {
+      final allSchools = [
+        ...testSchools,
+        SchoolDashboardData(
+          school: SchoolModel(
+            schoolId: 'SCH004',
+            name: 'Udaipur Public Academy',
+            address: 'City Palace Road, Udaipur',
+            districtId: 'DIST002',
+            studentCount: 1100,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+          latestAttendancePercentage: 89.0,
+          weeklyAttendancePercentage: 87.0,
+          monthlyAttendancePercentage: 85.0,
+          feeSubmissionRate: 80.0,
+          feesCollected: 500000.0,
+          feesPending: 100000.0,
+          examStatus: 'On track',
+          feedbackStatus: 'good',
+        ),
+      ];
+
+      // Admin A with districtId DIST001
+      final adminADistrictId = 'DIST001';
+      final adminASchools = allSchools
+          .where((s) => s.school.districtId == adminADistrictId)
+          .toList();
+      expect(adminASchools.length, 3);
+      expect(adminASchools.every((s) => s.school.districtId == 'DIST001'), isTrue);
+      expect(adminASchools.map((s) => s.school.schoolId), containsAll(['SCH001', 'SCH002', 'SCH003']));
+
+      // Admin B with districtId DIST002
+      final adminBDistrictId = 'DIST002';
+      final adminBSchools = allSchools
+          .where((s) => s.school.districtId == adminBDistrictId)
+          .toList();
+      expect(adminBSchools.length, 1);
+      expect(adminBSchools.first.school.schoolId, 'SCH004');
+      expect(adminBSchools.first.school.districtId, 'DIST002');
+    });
   });
 }
 

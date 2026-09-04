@@ -179,7 +179,9 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                 DistrictSummaryMetric(
                   label: 'Total Monitored',
                   value: '${schools.length}',
-                  subtitle: 'Jaipur District',
+                  subtitle: widget.summary.districtId.isNotEmpty
+                      ? '${widget.summary.districtId} District'
+                      : 'District Schools',
                   icon: Icons.account_balance_rounded,
                 ),
               ],

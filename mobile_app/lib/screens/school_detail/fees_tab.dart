@@ -44,6 +44,84 @@ class _FeesTabState extends State<FeesTab> {
     return '₹${amount.toStringAsFixed(0)}';
   }
 
+  Future<void> _showUpdateFeeDialog(FeePeriodModel active) async {
+    final schoolId = widget.schoolData.school.schoolId;
+    final submittedController =
+        TextEditingController(text: active.totalSubmitted.toStringAsFixed(0));
+    final pendingController =
+        TextEditingController(text: active.pendingAmount.toStringAsFixed(0));
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Update Fees for ${widget.schoolData.school.name}',
+          style: const TextStyle(color: AppColors.text, fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: submittedController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Total Collected / Submitted (₹)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: pendingController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Pending Amount (₹)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.secondaryText)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.background,
+            ),
+            onPressed: () async {
+              final submitted = double.tryParse(submittedController.text.trim()) ?? 0.0;
+              final pending = double.tryParse(pendingController.text.trim()) ?? 0.0;
+              if (submitted >= 0 && pending >= 0) {
+                Navigator.pop(ctx);
+                await _service.updateFeePeriod(
+                  schoolId: schoolId,
+                  feePeriodId: active.periodId,
+                  totalSubmitted: submitted,
+                  pendingAmount: pending,
+                );
+                if (mounted) {
+                  setState(() {
+                    _future = _service.getSchoolFeePeriods(schoolId);
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Fees updated: Collected ${_formatCurrency(submitted)}, Pending ${_formatCurrency(pending)}!'),
+                      backgroundColor: const Color(0xFF4A6741),
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Save to Firestore', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<FeePeriodModel>>(
@@ -140,6 +218,25 @@ class _FeesTabState extends State<FeesTab> {
                           bgColor: const Color(0xFFFAEAED),
                         ),
                       ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Update Fee Collection Button
+                    ElevatedButton.icon(
+                      onPressed: () => _showUpdateFeeDialog(active),
+                      icon: const Icon(Icons.account_balance_wallet_rounded, size: 18, color: Colors.white),
+                      label: const Text(
+                        'Update Fee Collection',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.background,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
                     ),
                   ],
                 ),

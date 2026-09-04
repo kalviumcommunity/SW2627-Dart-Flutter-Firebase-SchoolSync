@@ -5,6 +5,8 @@ import 'package:mobile_app/models/attendance_model.dart';
 import 'package:mobile_app/models/fee_period_model.dart';
 import 'package:mobile_app/models/exam_model.dart';
 import 'package:mobile_app/models/feedback_model.dart';
+import 'package:mobile_app/models/user_model.dart';
+import 'package:mobile_app/models/signup_model.dart';
 
 // A simple fake DocumentSnapshot for unit testing the models
 // ignore: subtype_of_sealed_class
@@ -138,6 +140,80 @@ void main() {
       expect(fb.feedbackId, 'FB001');
       expect(fb.symbol, 'good');
       expect(fb.text, 'Good academic status');
+    });
+
+    test('UserModel - Serialization, deserialization, and District Isolation mapping', () {
+      final doc = FakeDocumentSnapshot('USER123', {
+        'email': 'admin1@district1.com',
+        'name': 'Priya Sharma',
+        'role': 'district_admin',
+        'districtId': 'DIST001',
+      });
+
+      final user = UserModel.fromFirestore(doc);
+      expect(user.uid, 'USER123');
+      expect(user.email, 'admin1@district1.com');
+      expect(user.name, 'Priya Sharma');
+      expect(user.role, 'district_admin');
+      expect(user.districtId, 'DIST001');
+
+      final userMap = user.toMap();
+      expect(userMap['districtId'], 'DIST001');
+      expect(userMap['role'], 'district_admin');
+
+      final user2 = UserModel.fromMap('USER456', {
+        'email': 'admin2@district2.com',
+        'name': 'Rajesh Kumar',
+        'role': 'district_admin',
+        'districtId': 'DIST002',
+      });
+      expect(user2.districtId, 'DIST002');
+      expect(user2.uid, 'USER456');
+    });
+
+    test('SignupModel - District ID validation and serialization', () {
+      final validSignup = SignupModel(
+        name: 'Priya Sharma',
+        email: 'priya@district1.in',
+        districtId: 'DIST001',
+        password: 'password123',
+        confirmPassword: 'password123',
+      );
+      expect(validSignup.validate(), isNull);
+      expect(validSignup.passwordsMatch, isTrue);
+      expect(validSignup.district, 'DIST001');
+
+      final map = validSignup.toMap();
+      expect(map['name'], 'Priya Sharma');
+      expect(map['email'], 'priya@district1.in');
+      expect(map['districtId'], 'DIST001');
+
+      final emptyDistrictSignup = SignupModel(
+        name: 'Priya Sharma',
+        email: 'priya@district1.in',
+        districtId: '',
+        password: 'password123',
+        confirmPassword: 'password123',
+      );
+      expect(emptyDistrictSignup.validate(), 'Please enter your District ID.');
+
+      final shortDistrictSignup = SignupModel(
+        name: 'Priya Sharma',
+        email: 'priya@district1.in',
+        districtId: 'D',
+        password: 'password123',
+        confirmPassword: 'password123',
+      );
+      expect(shortDistrictSignup.validate(), 'District ID must be at least 2 characters.');
+
+      final passwordMismatchSignup = SignupModel(
+        name: 'Priya Sharma',
+        email: 'priya@district1.in',
+        districtId: 'DIST002',
+        password: 'password123',
+        confirmPassword: 'password456',
+      );
+      expect(passwordMismatchSignup.validate(), 'Passwords do not match.');
     });
 
   });

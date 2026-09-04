@@ -18,11 +18,12 @@ class DashboardBottomNav extends StatelessWidget {
       const _NavItemData(label: 'Attend.', icon: Icons.check_box_outlined, activeIcon: Icons.check_box),
       const _NavItemData(label: 'Fees', icon: Icons.monetization_on_outlined, activeIcon: Icons.monetization_on),
       const _NavItemData(label: 'Exams', icon: Icons.calendar_today_outlined, activeIcon: Icons.calendar_today),
+      const _NavItemData(label: 'Profile', icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded),
     ];
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(36),
@@ -41,11 +42,10 @@ class DashboardBottomNav extends StatelessWidget {
           final isSelected = index == currentIndex;
           final item = navItems[index];
 
-          return GestureDetector(
-            onTap: () => onTap(index),
-            behavior: HitTestBehavior.opaque,
-            child: SizedBox(
-              width: 64,
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => onTap(index),
+              behavior: HitTestBehavior.opaque,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -70,6 +70,8 @@ class DashboardBottomNav extends StatelessWidget {
 
                   Text(
                     item.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,

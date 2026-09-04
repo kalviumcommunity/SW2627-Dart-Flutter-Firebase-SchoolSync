@@ -5,12 +5,14 @@ class FirebaseErrorView extends StatelessWidget {
   final String title;
   final String message;
   final VoidCallback? onRetry;
+  final VoidCallback? onLogout;
 
   const FirebaseErrorView({
     super.key,
     this.title = 'No Firestore Data Available',
     required this.message,
     this.onRetry,
+    this.onLogout,
   });
 
   @override
@@ -142,6 +144,31 @@ class FirebaseErrorView extends StatelessWidget {
                       backgroundColor: AppColors.background,
                       foregroundColor: AppColors.white,
                       elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+              if (onLogout != null) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: OutlinedButton.icon(
+                    onPressed: onLogout,
+                    icon: const Icon(Icons.logout_rounded, size: 18, color: AppColors.text),
+                    label: const Text(
+                      'Sign Out / Switch Account',
+                      style: TextStyle(
+                        color: AppColors.text,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFCBC5B8), width: 1.2),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),

@@ -34,7 +34,7 @@ class SchoolCard extends StatelessWidget {
       },
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 11),
         decoration: BoxDecoration(
           color: AppColors.card,
           borderRadius: BorderRadius.circular(10),
@@ -54,110 +54,102 @@ class SchoolCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        school.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.text,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          height: 1.2,
-                        ),
-                      ),
-                    ),
-                    if (!isHealthy) ...[
-                      const SizedBox(width: 4),
-                      Tooltip(
-                        message: isCritical ? 'Critical Issue Detected' : 'Operational Warning',
-                        child: Icon(
-                          overall.icon,
-                          size: 16,
-                          color: overall.color,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      '${_formatNumber(school.studentCount)} STU',
-                      style: const TextStyle(
-                        color: AppColors.secondaryText,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                    const Text(
-                      '  ·  ',
-                      style: TextStyle(
-                        color: AppColors.secondaryText,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                      decoration: BoxDecoration(
-                        color: attStatus.backgroundColor,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'ATT ${schoolData.latestAttendancePercentage.toStringAsFixed(0)}%',
-                        style: TextStyle(
-                          color: attStatus.color,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    if (schoolData.feeSubmissionRate > 0 || schoolData.feesPending > 0) ...[
-                      const Text(
-                        '  ·  ',
-                        style: TextStyle(
-                          color: AppColors.secondaryText,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                        decoration: BoxDecoration(
-                          color: schoolData.feeStatus.backgroundColor,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
                         child: Text(
-                          'FEE ${schoolData.feeSubmissionRate.toStringAsFixed(0)}%',
-                          style: TextStyle(
-                            color: schoolData.feeStatus.color,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
+                          school.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.text,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            height: 1.2,
                           ),
                         ),
                       ),
+                      if (!isHealthy) ...[
+                        const SizedBox(width: 4),
+                        Tooltip(
+                          message: isCritical ? 'Critical Issue Detected' : 'Operational Warning',
+                          child: Icon(
+                            overall.icon,
+                            size: 16,
+                            color: overall.color,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-              ],
+                  ),
+                  const Spacer(),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${_formatNumber(school.studentCount)} STU',
+                          style: const TextStyle(
+                            color: AppColors.secondaryText,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.5, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: attStatus.backgroundColor,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'ATT ${schoolData.latestAttendancePercentage.toStringAsFixed(0)}%',
+                            style: TextStyle(
+                              color: attStatus.color,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        if (schoolData.feeSubmissionRate > 0 || schoolData.feesPending > 0) ...[
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4.5, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: schoolData.feeStatus.backgroundColor,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'FEE ${schoolData.feeSubmissionRate.toStringAsFixed(0)}%',
+                              style: TextStyle(
+                                color: schoolData.feeStatus.color,
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                   decoration: BoxDecoration(
                     color: overall.solidColor,
                     borderRadius: BorderRadius.circular(4),

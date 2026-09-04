@@ -20,4 +20,25 @@ class ExamService {
       rethrow;
     }
   }
+
+  /// Updates status of an exam in Cloud Firestore under `schools/{schoolId}/exams/{examId}`.
+  Future<void> updateExamStatus({
+    required String schoolId,
+    required String examId,
+    required String newStatus,
+  }) async {
+    try {
+      await _db
+          .collection('schools')
+          .doc(schoolId)
+          .collection('exams')
+          .doc(examId)
+          .set({
+        'status': newStatus,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

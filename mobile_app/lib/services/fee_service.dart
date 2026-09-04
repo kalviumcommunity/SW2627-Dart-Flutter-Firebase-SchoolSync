@@ -20,4 +20,37 @@ class FeeService {
       rethrow;
     }
   }
+
+  /// Updates or inserts a fee period document in Cloud Firestore under `schools/{schoolId}/feePeriods/{feePeriodId}`.
+  Future<void> updateFeePeriod({
+    required String schoolId,
+    required String feePeriodId,
+    required double totalSubmitted,
+    required double pendingAmount,
+    double? totalDue,
+    String? status,
+  }) async {
+    try {
+      final due = totalDue ?? (totalSubmitted + pendingAmount);
+      final rate = due > 0 ? (totalSubmitted / due) * 100 : 0.0;
+
+      await _db
+          .collection('schools')
+          .doc(schoolId)
+          .collection('feePeriods')
+          .doc(feePeriodId)
+          .set({
+        'id': feePeriodId,
+        'schoolId': schoolId,
+        'totalSubmitted': totalSubmitted,
+        'pendingAmount': pendingAmount,
+        'totalDue': due,
+        'submissionRate': rate,
+        if (status != null) 'status': status,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
