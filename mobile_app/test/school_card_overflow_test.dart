@@ -99,4 +99,70 @@ void main() {
     expect(find.text('FEE 98%'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('SchoolCard on Google Pixel 7 (412x915) full grid layout with standard and large text scaling',
+      (WidgetTester tester) async {
+    final school = SchoolModel(
+      schoolId: 'SCH001',
+      name: 'Adarsh Senior Secondary School',
+      address: 'Jaipur, Rajasthan',
+      districtId: 'DIST001',
+      studentCount: 1148,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    final schoolData = SchoolDashboardData(
+      school: school,
+      latestAttendancePercentage: 5.0,
+      weeklyAttendancePercentage: 10.0,
+      monthlyAttendancePercentage: 15.0,
+      feeSubmissionRate: 75.0,
+      feesCollected: 75000,
+      feesPending: 25000,
+      examStatus: 'Lagging',
+      feedbackStatus: 'Requires Review',
+    );
+
+    // Pixel 7 logical size
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.625;
+    addTearDown(tester.view.reset);
+
+    // Test with standard and enlarged accessibility text scaler (1.3x)
+    for (final textScale in [1.0, 1.25, 1.4]) {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: MediaQueryData(
+              size: const Size(411.4, 914.3),
+              textScaler: TextScaler.linear(textScale),
+            ),
+            child: Scaffold(
+              body: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  itemCount: 4,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 14,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.88,
+                  ),
+                  itemBuilder: (context, idx) => SchoolCard(
+                    schoolData: schoolData,
+                    index: idx,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+  });
 }
