@@ -71,3 +71,10 @@ Financial and calculated data should be protected from unauthorized client-side 
 Current Status
 
 Database structure and mathematical calculation criteria have been conceptually finalized. The next development step is to translate this plan into the actual Firestore collections/documents, field types, indexes, Firebase Security Rules, and backend calculation functions.
+
+7. Firebase Storage related update
+After the addition of Distict ID in the sign up page .
+Made succesfull school and user data collection with updated information in the fire storage
+Updated the set of firebase rules for correct data input and storage.
+
+TODO-Update the seeddata file with weekly and monthly data to test the aggregation and logic for their related fields 
