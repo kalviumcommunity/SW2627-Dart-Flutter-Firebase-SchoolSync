@@ -44,29 +44,33 @@ class SchoolDashboardData {
     this.alerts = const [],
     this.overdueExamsCount = 0,
     this.approachingExamsCount = 0,
-  })  : attendanceStatus = attendanceStatus ??
-            ThresholdRules.evaluateAttendance(latestAttendancePercentage),
-        feeStatus =
-            feeStatus ?? ThresholdRules.evaluateFees(feeSubmissionRate),
-        examKPIStatus = examKPIStatus ??
-            (examStatus.toLowerCase() == 'lagging'
-                ? KPIStatus.critical
-                : (examStatus.toLowerCase().contains('approach')
-                    ? KPIStatus.warning
-                    : KPIStatus.healthy)),
-        overallStatus = overallStatus ??
-            ThresholdRules.evaluateSchoolStatus(
-              attendanceStatus: attendanceStatus ??
-                  ThresholdRules.evaluateAttendance(latestAttendancePercentage),
-              feeStatus: feeStatus ??
-                  ThresholdRules.evaluateFees(feeSubmissionRate),
-              examStatus: examKPIStatus ??
-                  (examStatus.toLowerCase() == 'lagging'
-                      ? KPIStatus.critical
-                      : (examStatus.toLowerCase().contains('approach')
-                          ? KPIStatus.warning
-                          : KPIStatus.healthy)),
-            );
+  }) : attendanceStatus =
+           attendanceStatus ??
+           ThresholdRules.evaluateAttendance(latestAttendancePercentage),
+       feeStatus = feeStatus ?? ThresholdRules.evaluateFees(feeSubmissionRate),
+       examKPIStatus =
+           examKPIStatus ??
+           (examStatus.toLowerCase() == 'lagging'
+               ? KPIStatus.critical
+               : (examStatus.toLowerCase().contains('approach')
+                     ? KPIStatus.warning
+                     : KPIStatus.healthy)),
+       overallStatus =
+           overallStatus ??
+           ThresholdRules.evaluateSchoolStatus(
+             attendanceStatus:
+                 attendanceStatus ??
+                 ThresholdRules.evaluateAttendance(latestAttendancePercentage),
+             feeStatus:
+                 feeStatus ?? ThresholdRules.evaluateFees(feeSubmissionRate),
+             examStatus:
+                 examKPIStatus ??
+                 (examStatus.toLowerCase() == 'lagging'
+                     ? KPIStatus.critical
+                     : (examStatus.toLowerCase().contains('approach')
+                           ? KPIStatus.warning
+                           : KPIStatus.healthy)),
+           );
 }
 
 /// Consolidated district overview metrics with operational status summary.
@@ -95,23 +99,30 @@ class DistrictDashboardSummary {
     KPIStatus? districtFeeStatus,
     KPIStatus? districtExamStatus,
     KPIStatus? districtOverallStatus,
-  })  : districtAttendanceStatus = districtAttendanceStatus ??
-            ThresholdRules.evaluateAttendance(averageAttendanceToday),
-        districtFeeStatus = districtFeeStatus ??
-            ((totalFeesCollected + totalFeesPending) > 0
-                ? ThresholdRules.evaluateFees(
-                    (totalFeesCollected / (totalFeesCollected + totalFeesPending)) * 100.0)
-                : KPIStatus.healthy),
-        districtExamStatus = districtExamStatus ??
-            (examProgressStatus.toLowerCase() == 'lagging'
-                ? KPIStatus.critical
-                : KPIStatus.healthy),
-        districtOverallStatus = districtOverallStatus ??
-            (schoolsData.any((s) => s.overallStatus == KPIStatus.critical)
-                ? KPIStatus.critical
-                : (schoolsData.any((s) => s.overallStatus == KPIStatus.warning)
-                    ? KPIStatus.warning
-                    : KPIStatus.healthy));
+  }) : districtAttendanceStatus =
+           districtAttendanceStatus ??
+           ThresholdRules.evaluateAttendance(averageAttendanceToday),
+       districtFeeStatus =
+           districtFeeStatus ??
+           ((totalFeesCollected + totalFeesPending) > 0
+               ? ThresholdRules.evaluateFees(
+                   (totalFeesCollected /
+                           (totalFeesCollected + totalFeesPending)) *
+                       100.0,
+                 )
+               : KPIStatus.healthy),
+       districtExamStatus =
+           districtExamStatus ??
+           (examProgressStatus.toLowerCase() == 'lagging'
+               ? KPIStatus.critical
+               : KPIStatus.healthy),
+       districtOverallStatus =
+           districtOverallStatus ??
+           (schoolsData.any((s) => s.overallStatus == KPIStatus.critical)
+               ? KPIStatus.critical
+               : (schoolsData.any((s) => s.overallStatus == KPIStatus.warning)
+                     ? KPIStatus.warning
+                     : KPIStatus.healthy));
 }
 
 class DashboardService {
@@ -172,6 +183,26 @@ class DashboardService {
         double monthlyAtt = 0.0;
 
         if (attendanceRecords.isNotEmpty) {
+          final latestAttendanceDate = AttendanceCalculator.parseRecordDate(
+            attendanceRecords.first,
+          );
+          final weeklyTargetDate =
+              AttendanceCalculator.getWeeklyRecordCount(
+                    attendanceRecords,
+                    targetDate: now,
+                  ) >
+                  0
+              ? now
+              : latestAttendanceDate;
+          final monthlyTargetDate =
+              AttendanceCalculator.getMonthlyRecordCount(
+                    attendanceRecords,
+                    targetDate: now,
+                  ) >
+                  0
+              ? now
+              : latestAttendanceDate;
+
           latestAtt = AttendanceCalculator.getDailyAttendance(
             attendanceRecords,
             targetDate: now,
@@ -182,13 +213,13 @@ class DashboardService {
           // Weekly: strictly Monday 00:00:00 to Sunday 23:59:59
           weeklyAtt = AttendanceCalculator.calculateWeeklyAttendance(
             attendanceRecords,
-            targetDate: now,
+            targetDate: weeklyTargetDate,
           );
 
           // Monthly: strictly 1st day 00:00:00 to last day 23:59:59
           monthlyAtt = AttendanceCalculator.calculateMonthlyAttendance(
             attendanceRecords,
-            targetDate: now,
+            targetDate: monthlyTargetDate,
           );
         }
 
@@ -199,8 +230,9 @@ class DashboardService {
             .collection('feePeriods')
             .get();
 
-        final List<FeePeriodModel> feePeriods =
-            feesSnap.docs.map((d) => FeePeriodModel.fromFirestore(d)).toList();
+        final List<FeePeriodModel> feePeriods = feesSnap.docs
+            .map((d) => FeePeriodModel.fromFirestore(d))
+            .toList();
 
         double collected = 0.0;
         double pending = 0.0;
@@ -231,8 +263,9 @@ class DashboardService {
             .collection('exams')
             .get();
 
-        final List<ExamModel> exams =
-            examsSnap.docs.map((d) => ExamModel.fromFirestore(d)).toList();
+        final List<ExamModel> exams = examsSnap.docs
+            .map((d) => ExamModel.fromFirestore(d))
+            .toList();
 
         final examEval = ThresholdRules.evaluateExams(exams, targetDate: now);
         if (examEval.status == KPIStatus.critical) {
@@ -251,7 +284,9 @@ class DashboardService {
 
         final schoolExamStatus = examEval.status == KPIStatus.critical
             ? 'Lagging'
-            : (examEval.status == KPIStatus.warning ? 'Approaching' : 'On track');
+            : (examEval.status == KPIStatus.warning
+                  ? 'Approaching'
+                  : 'On track');
 
         // --- 5. Fetch Feedback Status ---
         final feedbackSnap = await _db
@@ -311,7 +346,9 @@ class DashboardService {
           ? attendanceSum / schoolsWithAttendanceCount
           : 0.0;
 
-      debugPrint('📊 [DashboardService] Successfully fetched ${schoolsData.length} schools live from Cloud Firestore for district "$districtId"!');
+      debugPrint(
+        '📊 [DashboardService] Successfully fetched ${schoolsData.length} schools live from Cloud Firestore for district "$districtId"!',
+      );
       return DistrictDashboardSummary(
         districtId: districtId,
         averageAttendanceToday: avgAttendanceToday,
@@ -327,4 +364,3 @@ class DashboardService {
     }
   }
 }
-
