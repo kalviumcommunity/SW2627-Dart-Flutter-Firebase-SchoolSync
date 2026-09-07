@@ -123,40 +123,28 @@ class _ExamsTabState extends State<ExamsTab> {
                     text: 'Overdue',
                     color: Color(0xFFC98591)),
                 const SizedBox(height: 10),
-                ...overdue.map((e) => _ExamCard(
-                      exam: e,
-                      onStatusChanged: (status) => _handleStatusChange(e, status),
-                    )),
+                ...overdue.map((e) => _ExamCard(exam: e)),
               ],
 
               if (upcoming.isNotEmpty) ...[
                 const SizedBox(height: 24),
                 const SectionHeader(text: 'Upcoming'),
                 const SizedBox(height: 10),
-                ...upcoming.map((e) => _ExamCard(
-                      exam: e,
-                      onStatusChanged: (status) => _handleStatusChange(e, status),
-                    )),
+                ...upcoming.map((e) => _ExamCard(exam: e)),
               ],
 
               if (completed.isNotEmpty) ...[
                 const SizedBox(height: 24),
                 const SectionHeader(text: 'Completed'),
                 const SizedBox(height: 10),
-                ...completed.map((e) => _ExamCard(
-                      exam: e,
-                      onStatusChanged: (status) => _handleStatusChange(e, status),
-                    )),
+                ...completed.map((e) => _ExamCard(exam: e)),
               ],
 
               if (cancelled.isNotEmpty) ...[
                 const SizedBox(height: 24),
                 const SectionHeader(text: 'Cancelled'),
                 const SizedBox(height: 10),
-                ...cancelled.map((e) => _ExamCard(
-                      exam: e,
-                      onStatusChanged: (status) => _handleStatusChange(e, status),
-                    )),
+                ...cancelled.map((e) => _ExamCard(exam: e)),
               ],
 
               if (exams.isEmpty)
@@ -176,35 +164,14 @@ class _ExamsTabState extends State<ExamsTab> {
       },
     );
   }
-
-  Future<void> _handleStatusChange(ExamModel exam, String newStatus) async {
-    final schoolId = widget.schoolData.school.schoolId;
-    await _service.updateExamStatus(
-      schoolId: schoolId,
-      examId: exam.examId,
-      newStatus: newStatus,
-    );
-    if (mounted) {
-      setState(() {
-        _future = _service.getSchoolExams(schoolId);
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Updated "${exam.examName}" status to $newStatus in Firestore!'),
-          backgroundColor: const Color(0xFF4A6741),
-        ),
-      );
-    }
-  }
 }
 
 // ── Sub-widgets ──────────────────────────────────────────────────────────────
 
 class _ExamCard extends StatelessWidget {
   final ExamModel exam;
-  final ValueChanged<String>? onStatusChanged;
 
-  const _ExamCard({required this.exam, this.onStatusChanged});
+  const _ExamCard({required this.exam});
 
   @override
   Widget build(BuildContext context) {
@@ -295,46 +262,20 @@ class _ExamCard extends StatelessWidget {
 
           const SizedBox(width: 8),
 
-          // Interactive Status badge with menu dropdown
-          PopupMenuButton<String>(
-            onSelected: (val) => onStatusChanged?.call(val),
-            color: AppColors.card,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            itemBuilder: (ctx) => const [
-              PopupMenuItem(
-                value: 'completed',
-                child: Text('✅ Mark Done'),
-              ),
-              PopupMenuItem(
-                value: 'scheduled',
-                child: Text('📅 Mark Scheduled'),
-              ),
-              PopupMenuItem(
-                value: 'cancelled',
-                child: Text('🚫 Cancel Exam'),
-              ),
-            ],
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: statusBg,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    statusLabel,
-                    style: TextStyle(
-                      color: statusColor,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(width: 2),
-                  Icon(Icons.arrow_drop_down, color: statusColor, size: 14),
-                ],
+          // Read-only Status badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: statusBg,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              statusLabel,
+              style: TextStyle(
+                color: statusColor,
+                fontSize: 9,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.8,
               ),
             ),
           ),
