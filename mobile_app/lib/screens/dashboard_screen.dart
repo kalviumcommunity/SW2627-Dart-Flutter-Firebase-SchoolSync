@@ -306,7 +306,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             DashboardHeader(
               userName: userName,
               districtId: _userProfile?.districtId,
-              onLogout: _handleLogout,
               onProfileTap: () => setState(() => _currentIndex = 4),
             ),
 
