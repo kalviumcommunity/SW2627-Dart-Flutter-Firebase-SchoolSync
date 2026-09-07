@@ -70,16 +70,17 @@ class FilterChipRow<T> extends StatelessWidget {
                       Icon(
                         item.icon,
                         size: 14,
-                        color: isSelected ? AppColors.text : const Color(0xFFC7BDB3),
+                        color: isSelected ? const Color(0xFF22160E) : const Color(0xFFE2DCCE),
                       ),
                       const SizedBox(width: 6),
                     ],
                     Text(
                       item.label,
                       style: TextStyle(
-                        color: isSelected ? AppColors.text : const Color(0xFFE2DCCE),
+                        color: isSelected ? const Color(0xFF22160E) : const Color(0xFFFAF7EF),
                         fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+                        letterSpacing: 0.2,
                       ),
                     ),
                     if (item.count != null) ...[
@@ -88,16 +89,16 @@ class FilterChipRow<T> extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppColors.text.withAlpha(25)
-                              : const Color(0x33FFFFFF),
+                              ? const Color(0xFF22160E).withAlpha(25)
+                              : const Color(0x44FFFFFF),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           '${item.count}',
                           style: TextStyle(
-                            color: isSelected ? AppColors.text : const Color(0xFFFAF7EF),
+                            color: isSelected ? const Color(0xFF22160E) : Colors.white,
                             fontSize: 10,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                       ),

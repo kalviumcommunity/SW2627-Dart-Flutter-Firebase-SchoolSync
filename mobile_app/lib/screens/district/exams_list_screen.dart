@@ -226,50 +226,49 @@ class _ExamsListScreenState extends State<ExamsListScreen> {
                   initialValue: _sortOption,
                   onSelected: (val) => setState(() => _sortOption = val),
                   color: AppColors.card,
+                  elevation: 6,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: Color(0xFFDCD4C4), width: 1.5),
                   ),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                     decoration: BoxDecoration(
-                      color: const Color(0x22000000),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0x33FFFFFF)),
+                      color: AppColors.card,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFDCD4C4), width: 1.2),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x1F000000),
+                          offset: Offset(0, 2),
+                          blurRadius: 4,
+                        ),
+                      ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.sort_rounded, color: AppColors.card, size: 16),
+                        const Icon(Icons.tune_rounded, color: AppColors.text, size: 15),
                         const SizedBox(width: 6),
                         Text(
                           _getSortLabel(_sortOption),
                           style: const TextStyle(
-                            color: AppColors.card,
+                            color: AppColors.text,
                             fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.2,
                           ),
                         ),
-                        const Icon(Icons.arrow_drop_down_rounded, color: AppColors.card, size: 18),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.arrow_drop_down_rounded, color: AppColors.text, size: 18),
                       ],
                     ),
                   ),
                   itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: ExamSortOption.laggingFirst,
-                      child: Text('Lagging Schools First'),
-                    ),
-                    const PopupMenuItem(
-                      value: ExamSortOption.onTrackFirst,
-                      child: Text('On Track Schools First'),
-                    ),
-                    const PopupMenuItem(
-                      value: ExamSortOption.name,
-                      child: Text('School Name (A-Z)'),
-                    ),
-                    const PopupMenuItem(
-                      value: ExamSortOption.students,
-                      child: Text('Student Count (High-Low)'),
-                    ),
+                    _buildSortMenuItem(ExamSortOption.laggingFirst, 'Lagging Schools First'),
+                    _buildSortMenuItem(ExamSortOption.onTrackFirst, 'On Track Schools First'),
+                    _buildSortMenuItem(ExamSortOption.name, 'School Name (A-Z)'),
+                    _buildSortMenuItem(ExamSortOption.students, 'Student Count (High-Low)'),
                   ],
                 ),
               ],
@@ -320,6 +319,36 @@ class _ExamsListScreenState extends State<ExamsListScreen> {
       case ExamSortOption.students:
         return 'Students';
     }
+  }
+
+  PopupMenuItem<ExamSortOption> _buildSortMenuItem(
+    ExamSortOption value,
+    String label,
+  ) {
+    final isSelected = _sortOption == value;
+    return PopupMenuItem<ExamSortOption>(
+      value: value,
+      child: Row(
+        children: [
+          Icon(
+            isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+            size: 16,
+            color: isSelected ? const Color(0xFF6B472E) : const Color(0xFF8C847A),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: const Color(0xFF22160E),
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildEmptyState() {
