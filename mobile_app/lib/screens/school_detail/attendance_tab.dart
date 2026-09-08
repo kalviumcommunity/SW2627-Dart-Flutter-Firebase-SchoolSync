@@ -30,21 +30,40 @@ class _AttendanceTabState extends State<AttendanceTab> {
   @override
   void initState() {
     super.initState();
-    _future = _attendanceService
-        .getSchoolAttendanceHistory(widget.schoolData.school.schoolId);
+    _future = _attendanceService.getSchoolAttendanceHistory(
+      widget.schoolData.school.schoolId,
+    );
   }
 
   // ── Derived values ──────────────────────────────────────────────────────────
 
+  DateTime? _targetDateForMode(List<AttendanceModel> records) {
+    if (_modeIndex == 0) return null;
+
+    final hasCurrentPeriodRecords = _modeIndex == 1
+        ? AttendanceCalculator.getWeeklyRecordCount(records) > 0
+        : AttendanceCalculator.getMonthlyRecordCount(records) > 0;
+    if (hasCurrentPeriodRecords) return null;
+
+    return AttendanceCalculator.parseRecordDate(records.first);
+  }
+
   double _computePercentage(List<AttendanceModel> records) {
     if (records.isEmpty) return 0.0;
+    final targetDate = _targetDateForMode(records);
     switch (_modeIndex) {
       case 0: // Daily — today or most recent record
         return AttendanceCalculator.getDailyAttendance(records);
       case 1: // Weekly — strictly Monday 00:00 to Sunday 23:59
-        return AttendanceCalculator.calculateWeeklyAttendance(records);
+        return AttendanceCalculator.calculateWeeklyAttendance(
+          records,
+          targetDate: targetDate,
+        );
       case 2: // Monthly — strictly 1st day to last day of current month
-        return AttendanceCalculator.calculateMonthlyAttendance(records);
+        return AttendanceCalculator.calculateMonthlyAttendance(
+          records,
+          targetDate: targetDate,
+        );
       default:
         return AttendanceCalculator.getDailyAttendance(records);
     }
@@ -55,16 +74,23 @@ class _AttendanceTabState extends State<AttendanceTab> {
     final presentCount = (pct / 100 * studentCount).round();
     final formatted = _formatNumber(studentCount);
     final formattedPresent = _formatNumber(presentCount);
+    final targetDate = _targetDateForMode(records);
 
     switch (_modeIndex) {
       case 0:
         return '$formattedPresent of $formatted students present today';
       case 1:
-        final count = AttendanceCalculator.getWeeklyRecordCount(records);
+        final count = AttendanceCalculator.getWeeklyRecordCount(
+          records,
+          targetDate: targetDate,
+        );
         if (count == 0) return 'No attendance submitted this week';
         return '$formattedPresent of $formatted students avg ($count ${count == 1 ? 'day' : 'days'} this week)';
       case 2:
-        final count = AttendanceCalculator.getMonthlyRecordCount(records);
+        final count = AttendanceCalculator.getMonthlyRecordCount(
+          records,
+          targetDate: targetDate,
+        );
         if (count == 0) return 'No attendance submitted this month';
         return '$formattedPresent of $formatted students avg ($count ${count == 1 ? 'day' : 'days'} this month)';
       default:
@@ -72,8 +98,10 @@ class _AttendanceTabState extends State<AttendanceTab> {
     }
   }
 
-  String _formatNumber(int n) =>
-      n.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]},');
+  String _formatNumber(int n) => n.toString().replaceAllMapped(
+    RegExp(r'(\d)(?=(\d{3})+$)'),
+    (m) => '${m[1]},',
+  );
 
   // ── Build ───────────────────────────────────────────────────────────────────
 
@@ -91,7 +119,11 @@ class _AttendanceTabState extends State<AttendanceTab> {
           return FirebaseErrorView(
             title: 'Unable to Load Attendance',
             message: snapshot.error.toString().replaceAll('Exception: ', ''),
-            onRetry: () => setState(() => _future = _attendanceService.getSchoolAttendanceHistory(widget.schoolData.school.schoolId)),
+            onRetry: () => setState(
+              () => _future = _attendanceService.getSchoolAttendanceHistory(
+                widget.schoolData.school.schoolId,
+              ),
+            ),
           );
         }
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -112,7 +144,10 @@ class _AttendanceTabState extends State<AttendanceTab> {
               // ── Gauge card ──────────────────────────────────────────────
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 28,
+                  horizontal: 20,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.card,
                   borderRadius: BorderRadius.circular(16),
@@ -240,8 +275,7 @@ class _AttendanceRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isGood = record.attendancePercentage >= 75;
-    final dotColor =
-        isGood ? const Color(0xFF4A6741) : const Color(0xFFC98591);
+    final dotColor = isGood ? const Color(0xFF4A6741) : const Color(0xFFC98591);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 7),
