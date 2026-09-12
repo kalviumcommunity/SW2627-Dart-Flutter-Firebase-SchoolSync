@@ -173,3 +173,54 @@ After completing the log in and sign up flow we made and finalised the design an
 - Created `test/business_rules_test.dart` covering threshold boundaries, null handling, composite scoring, and alert generation.
 - Updated `test/dashboard_decision_test.dart` and `test/district_filtering_test.dart` to validate strict business rules compliance.
 - Ran full test suite (`flutter test`) — all 48 test cases passing.
+
+---
+
+# Date: 03 September 2026
+## 🎯 Objectives Completed:
+1. **Cross-Team Codebase Alignment & Documentation Sync**
+   - Synchronized local repository with upstream main branch containing team integrations (Profile page, multi-district isolation, and strict Firestore schema rules).
+   - Validated seamless interoperability between `BusinessRules` KPI evaluations and newly introduced profile navigation flows.
+   - Updated and maintained project documentation to ensure all team members and evaluators have full visibility into daily technical contributions.
+
+---
+
+# Date: 04 September 2026
+## 🎯 Objectives Completed:
+1. **Layout Overflow Resilience & High-DPI Scaling Tests for SchoolCard**
+   - Developed automated widget tests in `test/school_card_overflow_test.dart` specifically simulating the Google Pixel 7 hardware configuration (1080x2400 physical resolution, 411.4x914.3 logical dimensions, 2.625 device pixel ratio).
+   - Validated the 2-column dashboard grid layout (`childAspectRatio: 0.88`) across varied accessibility text scale factors (`1.0x`, `1.25x`, `1.4x`).
+   - Verified that long school names, high metric counts, status pills, and edge-case status badges render with zero pixel overflow exceptions.
+   - Merged upstream main into `Feature/issue_60_businessRule` branch for clean continuous integration.
+
+## 🧪 Testing Done:
+- Ran `test/school_card_overflow_test.dart` on simulated high-DPI viewports with dynamic font scaling — all passing with no layout assertion failures.
+
+---
+
+# Date: 07 September 2026
+## 🎯 Objectives Completed:
+1. **Consolidated Single Logout Architecture & Streamlined Navigation Header**
+   - Refactored `DashboardHeader` (`lib/widgets/dashboard_header.dart`) to remove the top-right sign out button and unnecessary `onLogout` callback parameter, streamlining the header layout to focus on user greeting, dynamic district ID, and live sync status.
+   - Cleaned up `DashboardScreen` (`lib/screens/dashboard_screen.dart`) by removing redundant `_handleLogout` wiring.
+   - Removed duplicate top-right AppBar action button from `ProfileScreen` (`lib/screens/profile_screen.dart`).
+   - Consolidated the logout action exclusively into the dedicated "Sign Out" list tile button inside the Profile screen body with confirmation dialog (`_confirmAndLogout`).
+   - Standardized application-wide logout flow to eliminate accidental logouts and align with modern mobile UX guidelines.
+
+## 🧪 Testing Done:
+- Verified `test/profile_screen_test.dart` and `test/district_auth_flow_test.dart` to ensure clean navigation and logout modal confirmation behavior.
+
+---
+
+# Date: 08 September 2026
+## 🎯 Objectives Completed:
+1. **Project Code Viva Preparation & End-to-End Architecture Mastery**
+   - Conducted in-depth technical code viva preparation and review focusing on core architectural pillars:
+     - **Authentication Lifecycle (`AuthService`):** Firebase Auth sign-up, sign-in, sign-out, reactive `authStateChanges()` stream subscription, comprehensive error code translations (`user-not-found`, `wrong-password`, `invalid-email`), and secure password reset workflows.
+     - **Attendance Engine & Mathematical Calculation Principle (`AttendanceService` & `AttendanceCalculator`):** Strict calendar date-bounded weekly (Monday 00:00:00 to Sunday 23:59:59.999) and monthly calculations, leap year boundary handling, and no-data gap handling (treating missing days as null rather than 0% skew).
+     - **Standardized KPI Business Rules & Decision Support (`BusinessRules`):** Threshold evaluation logic (<75% critical, 75–84.9% warning, ≥85% healthy), composite risk scoring, and automated alert generation.
+     - **UI Robustness & Clean Architecture:** Reusable widget hierarchy, single-responsibility services, and fallback resilience for network timeouts.
+   - Performed complete regression testing across the entire Flutter test suite.
+
+## 🧪 Testing Done:
+- Executed full test suite (`flutter test`) across all 64 automated unit and widget test cases — 100% passing.
