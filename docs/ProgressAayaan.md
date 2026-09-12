@@ -81,17 +81,29 @@ Firestore stores factual/raw data → Backend performs calculations → Flutter 
 Calculated values such as weekly/monthly attendance, fee submission rate, exam completion rate, and exam tracking status will not be treated as independent source data.
 
 6. Security & Data Integrity
-Firebase Authentication will identify users.
-Access will be controlled through Firestore security rules based on factors such as role, school, and district.
-Users should not be able to modify their own authorization fields.
-Financial and calculated data should be protected from unauthorized client-side manipulation.
-Current Status
 
-Database structure and mathematical calculation criteria have been conceptually finalized. The next development step is to translate this plan into the actual Firestore collections/documents, field types, indexes, Firebase Security Rules, and backend calculation functions.
+The application will use Firebase Authentication to identify users.
+
+Firestore Security Rules will control access based on factors such as:
+
+User authentication status
+User role
+School
+District
+Security Requirements
+Users must not be able to modify their own authorization-related fields.
+Users should only access data permitted by their role and assigned organization.
+Financial data must be protected from unauthorized modification.
+Calculated values should not be trusted when directly supplied by the client.
+Firestore rules will enforce appropriate read/write permissions.
+
+The goal is to ensure that authorization and important application data are controlled by the backend rather than relying solely on Flutter-side validation.
 
 7. Firebase Storage related update
 After the addition of Distict ID in the sign up page .
 Made succesfull school and user data collection with updated information in the fire storage
 Updated the set of firebase rules for correct data input and storage.
 
-TODO-Update the seeddata file with weekly and monthly data to test the aggregation and logic for their related fields 
+8.Seed data Updation
+
+All the seed data has been updated with fields for weekly and monthly data
